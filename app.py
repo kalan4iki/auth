@@ -97,8 +97,11 @@ async def authorize(data: Authorize):
             raise HTTPException(status_code=401, detail="Invalid client ID")
         if client.client_secret != data.client_secret:
             raise HTTPException(status_code=401, detail="Invalid client secret")
-        # if client.redirect_uri != data.redirect_uri:
-        #     raise HTTPException(status_code=401, detail="Invalid redirect URI")
+        # TODO: Добавить проверку адреса перехода
+        # TODO: Добавить проверку пользовательского имени и пароля
+        # TODO: Добавить проверку существования пользователя
+        # TODO: Добавить выдачу кода авторизации
+        # TODO: Добавить выдачу информации о клиенте
         
     return {"code": "authorization_code"}
 
