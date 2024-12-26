@@ -6,7 +6,8 @@ from pony.orm import db_session
 
 from db import Client, User, initialize_db, pwd_context
 from depends import get_current_user
-from models.token import Token, Authorize
+from models.token import Token, AuthorizeRequest, AuthorizeResponse, TokenRequest, TokenResponse
+from models import ErrorMessage
 from settings import setting
 from utils import get_url
 from utils.keys import check_keys_file_exists, get_key
@@ -89,32 +90,32 @@ async def jwks():
 
 
 # Эндпоинт для авторизации клиента
-@app.post("/user/authorize")
-async def authorize(data: Authorize):
+@app.post("/user/authorize", response_model=AuthorizeResponse, responses={401: {"model": ErrorMessage}})
+async def authorize(data: AuthorizeRequest):
     with db_session:
         client: Client = Client.get(client_id=data.client_id)
         if not client:
-            raise HTTPException(status_code=401, detail="Invalid client ID")
+            raise HTTPException(status_code=401, detail={"message": "Invalid client ID"})
         if client.client_secret != data.client_secret:
-            raise HTTPException(status_code=401, detail="Invalid client secret")
+            raise HTTPException(status_code=401, detail={"message": "Invalid client secret"})
         # TODO: Добавить проверку адреса перехода
         # TODO: Добавить проверку пользовательского имени и пароля
         # TODO: Добавить проверку существования пользователя
         # TODO: Добавить выдачу кода авторизации
         # TODO: Добавить выдачу информации о клиенте
-        
+
     return {"code": "authorization_code"}
 
 
 # Эндпоинт для токена доступа
-@app.post("/user/token")
-async def token(code: str, grant_type: str, redirect_uri: str, client_id: str, client_secret: str):
+@app.post("/user/token", response_model=TokenResponse, responses={403: {"model": ErrorMessage}})
+async def token(data: TokenRequest):
     with db_session:
-        client = Client.get(client_id=client_id)
+        client = Client.get(client_id=data.client_id)
         if not client:
-            raise HTTPException(status_code=401, detail="Invalid client")
-        if client.client_secret != client_secret:
-            raise HTTPException(status_code=401, detail="Invalid client secret")
+            raise HTTPException(status_code=401, detail={"message": "Invalid client ID"})
+        if client.client_secret != data.client_secret:
+            raise HTTPException(status_code=401, detail={"message": "Invalid client secret"})
         # TODO: Добавить проверку адреса перехода
         # TODO: Добавить проверку срока действия кода
         # TODO: Добавить проверку пользовательского имени и пароля
@@ -131,5 +132,5 @@ async def token(code: str, grant_type: str, redirect_uri: str, client_id: str, c
         "access_token": "access_token",
         "token_type": "bearer",
         "scope": client.scope,
-        "client_id": client_id,
+        "client_id": data.client_id,
     }
