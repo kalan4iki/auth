@@ -4,7 +4,7 @@ from db import Client
 from exception import AuthorizeException
 
 
-def get_client(client_id: str, redirect_uri: str, client_secret: str | None = None, secret_check: bool = False) -> Client:
+def get_client(client_id: str, redirect_uri: str | None = None, client_secret: str | None = None, secret_check: bool = False) -> Client:
     with db_session:
         client = Client.get(client_id=client_id)
         if not client:

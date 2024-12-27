@@ -2,17 +2,18 @@ from fastapi.routing import APIRouter
 
 from utils import get_url
 from utils.keys import get_key
+from models.config import ApiConfiguration, JWKSResponse
 
 config_router = APIRouter(prefix="/.well-known", tags=["config"])
 
 
 # Эндпоинт для конфигурации OpenID Connect
-@config_router.get("/openid-configuration")
+@config_router.get("/openid-configuration", response_model=ApiConfiguration)
 async def openid_configuration():
     base_url = get_url()
     return {
         "issuer": base_url,
-        "authorization_endpoint": base_url + "/user/authorize",
+        "authorization_endpoint": base_url + "/authorize",
         "token_endpoint": base_url + "/user/token",
         "userinfo_endpoint": base_url + "/user/userinfo",
         "jwks_uri": base_url + "/.well-known/jwks.json",
@@ -20,7 +21,7 @@ async def openid_configuration():
 
 
 # Эндпоинт для набора открытых ключей
-@config_router.get("/jwks.json")
+@config_router.get("/jwks.json", response_model=JWKSResponse)
 async def jwks():
     public_key = get_key("public", False)
     return {
