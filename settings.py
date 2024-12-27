@@ -1,8 +1,13 @@
-from pathlib import Path
+import os
 import secrets
+from pathlib import Path
+
 from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings
-import os
+
+from fastapi_csrf_protect import CsrfProtect
+from fastapi.templating import Jinja2Templates
+
 
 class Settings(BaseSettings):
     SECRET_KEY: str | None = None
@@ -13,7 +18,6 @@ class Settings(BaseSettings):
 
 
 setting = Settings()
-
 
 
 # OAuth2 схема
@@ -33,3 +37,14 @@ if not setting.SECRET_KEY:
         with open(path_key, "r") as f:
             key = f.read()
     setting.SECRET_KEY = key
+
+class CsrfSettings(BaseSettings):
+    secret_key: str = setting.SECRET_KEY
+    cookie_samesite: str = "none"
+    cookie_secure: bool = True
+
+@CsrfProtect.load_config
+def get_csrf_config():
+    return CsrfSettings()
+
+TEMPLATES = Jinja2Templates(directory="templates")

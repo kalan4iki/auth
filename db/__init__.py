@@ -1,4 +1,4 @@
 from .client import Client, UrlRedirect
 from .user import User
-from .base import db, pwd_context, initialize_db
-from .token import AuthorizationCode, AccessToken
+from .base import db, initialize_db
+from .token import AccessToken, AuthorizationCode

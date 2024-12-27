@@ -1,6 +1,7 @@
 from pony.orm import PrimaryKey, Required, Set
 
-from .base import db, pwd_context
+from .base import db
+from utils.password import verify_password, hash_password
 
 
 # Модель пользователя
@@ -11,5 +12,8 @@ class User(db.Entity):
     codes = Set("AuthorizationCode")
     tokens = Set("AccessToken")
 
-    def verify_password(self, plain_password):
-        return pwd_context.verify(plain_password, self.hashed_password)
+    def set_password(self, password: str):
+        self.hashed_password = hash_password(password)
+
+    def check_password(self, provided_password: str) -> bool:
+        return verify_password(self.hashed_password, provided_password)
